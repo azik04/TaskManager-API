@@ -16,9 +16,9 @@ public class TaskConfiguration : IEntityTypeConfiguration<Tasks>
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(t => t.ExecutiveUser)
-         .WithMany(t => t.Tasks)
-         .HasForeignKey(t => t.ExecutiveUserId)
-         .OnDelete(DeleteBehavior.Restrict);
+           .WithMany(t => t.Tasks)
+           .HasForeignKey(t => t.ExecutiveUserId)
+           .OnDelete(DeleteBehavior.Restrict);
 
         builder.Property(x => x.Priority)
           .HasConversion<int>();

@@ -19,6 +19,9 @@ public class SubTaskConfiguration : IEntityTypeConfiguration<SubTasks>
            .WithMany(u => u.CoTasks)
            .HasForeignKey(c => c.TaskId)
            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Property(x => x.Priority)
+            .HasConversion<int>();
     }
 
 }
