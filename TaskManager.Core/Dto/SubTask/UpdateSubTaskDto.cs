@@ -6,5 +6,5 @@ public class UpdateSubTaskDto
 {
     public string Name { get; set; }
     public Priority Priority { get; set; }
-    public DateOnly DeadLine { get; set; }
+    public DateOnly? DeadLine { get; set; }
 }

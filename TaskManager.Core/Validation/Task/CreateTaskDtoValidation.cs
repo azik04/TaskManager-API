@@ -15,18 +15,18 @@ namespace TaskManager.Core.Validation.Task
             RuleFor(x => x.TaskDescription)
                 .NotEmpty()
                 .WithMessage("Tapşırıq təsviri tələb olunur.");
+            
+            RuleFor(x => x.Priority)
+                .NotEmpty()
+                .WithMessage("Tapşırıq adı tələb olunur.");
 
             RuleFor(x => x.Status)
-                .IsInEnum()
-                .WithMessage("Seçilmiş status yanlışdır.");
+                .NotEmpty()
+                .WithMessage("Tapşırıq adı tələb olunur.");
 
-            RuleFor(x => x.Priority)
-                .IsInEnum()
-                .WithMessage("Seçilmiş prioritet yanlışdır."); 
-
-            //RuleFor(x => x.DeadLine)
-            //    .Must(deadline => deadline > DateOnly.FromDateTime(DateTime.Now))
-            //    .WithMessage("Son tarix indiki vaxtdan sonra olmalıdır.");
+            RuleFor(x => x.DeadLine)
+                .Must(deadline => deadline > DateOnly.FromDateTime(DateTime.Now))
+                .WithMessage("Son tarix indiki vaxtdan sonra olmalıdır.");
 
             RuleFor(x => x.ThemeId)
                 .GreaterThan(0)

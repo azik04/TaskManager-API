@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TaskManager.Core.Dto.Users;
+using TaskManager.Core.Dto.UserTask;
 using TaskManager.Core.Interfaces;
 using TaskManager.DataProvider.Context;
 using TaskManager.DataProvider.Entities;
@@ -34,7 +35,6 @@ public class UserService : IUserService
             Id = data.Id,
             CreateAt = data.CreateAt,
             Email = data.Email,
-            Password = data.Password,
             FullName = data.FullName,
             isDeleted = data.IsDeleted,
         };
@@ -51,12 +51,33 @@ public class UserService : IUserService
             Id = user.Id,
             CreateAt = user.CreateAt,
             Email = user.Email,
-            Password = user.Password,
             FullName = user.FullName,
             isDeleted = user.IsDeleted,
         }).ToList();
 
         return new BaseResponse<ICollection<GetUserDto>> (dto);
+    }
+
+    public async Task<BaseResponse<GetUserDto>> GetById(long id)
+    {
+        if (id <= 0)
+            return new BaseResponse<GetUserDto>(null, false);
+
+        var data = await _db.Users.SingleOrDefaultAsync(x => !x.IsDeleted && x.Id == id);
+        
+        if (data == null)
+            return new BaseResponse<GetUserDto>(null, false);
+
+        var dto = new GetUserDto
+        {
+            Id = data.Id,
+            CreateAt = data.CreateAt,
+            Email = data.Email,
+            FullName = data.FullName,
+            isDeleted = data.IsDeleted,
+        };
+
+        return new BaseResponse<GetUserDto>(dto);
     }
 
     public async Task<BaseResponse<ICollection<GetUserDto>>> GetUser()
@@ -68,7 +89,6 @@ public class UserService : IUserService
             Id = user.Id,
             CreateAt = user.CreateAt,
             Email = user.Email,
-            Password = user.Password,
             FullName = user.FullName,
             isDeleted = user.IsDeleted,
         }).ToList();
@@ -95,7 +115,6 @@ public class UserService : IUserService
             Id = data.Id,
             CreateAt = data.CreateAt,
             Email = data.Email,
-            Password = data.Password,
             FullName = data.FullName,
             isDeleted = data.IsDeleted,
         };
@@ -114,14 +133,17 @@ public class UserService : IUserService
 
         data.Role = role;
 
+        _db.Users.Update(data);
+        await _db.SaveChangesAsync();
+
         var dto = new GetUserDto
         {
             Id = data.Id,
             CreateAt = data.CreateAt,
             Email = data.Email,
-            Password = data.Password,
             FullName = data.FullName,
             isDeleted = data.IsDeleted,
+            
         };
 
         return new BaseResponse<GetUserDto>(dto);
@@ -147,11 +169,12 @@ public class UserService : IUserService
             Id = data.Id,
             CreateAt = data.CreateAt,
             Email = data.Email,
-            Password = data.Password,
             FullName = data.FullName,
             isDeleted = data.IsDeleted,
         };
 
         return new BaseResponse<GetUserDto>(dto);
     }
+
+
 }

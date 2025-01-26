@@ -53,7 +53,7 @@ public class SubTaskService : ISubTaskService
         if (taskId <= 0)
             return new BaseResponse<ICollection<GetSubTaskDto>>(null);
 
-        var data = await _db.SubTasks.Where(x => x.IsCompleted && !x.IsDeleted && x.TaskId == taskId).ToListAsync();
+        var data = await _db.SubTasks.Where(x => x.IsCompleted && !x.IsDeleted && x.TaskId == taskId).OrderByDescending(x => x.CreateAt).ToListAsync();
         var callDtos = new List<GetSubTaskDto>();
 
         foreach (var item in data)
@@ -86,7 +86,7 @@ public class SubTaskService : ISubTaskService
         if (taskId <= 0)
             return new BaseResponse<ICollection<GetSubTaskDto>>(null);
 
-        var data = await _db.SubTasks.Where(x => !x.IsCompleted && !x.IsDeleted && x.TaskId == taskId).ToListAsync();
+        var data = await _db.SubTasks.Where(x => !x.IsCompleted && !x.IsDeleted && x.TaskId == taskId).OrderByDescending(x => x.CreateAt).ToListAsync();
         var callDtos = new List<GetSubTaskDto>();
 
         foreach (var item in data)

@@ -9,7 +9,7 @@ namespace TaskManager.Infrastructure
         {
             var connection = configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(connection));
+                options.UseInMemoryDatabase(connection));
         }
     }
 }

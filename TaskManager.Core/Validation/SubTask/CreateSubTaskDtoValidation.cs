@@ -12,10 +12,14 @@ public class CreateSubTaskDtoValidation : AbstractValidator<CreateSubTaskDto>
             .WithMessage("Alt tapşırıq adı tələb olunur.");
 
         RuleFor(x => x.Priority)
-            .IsInEnum()
-            .WithMessage("Seçilmiş prioritet yanlışdır.");
+             .NotNull()
+             .WithMessage("Prioritet tələb olunur.")
+             .IsInEnum()
+             .WithMessage("Seçilmiş prioritet yanlışdır.");
 
         RuleFor(x => x.DeadLine)
+            .NotEmpty()
+            .WithMessage("Son tarix adı tələb olunur.")
             .Must(deadline => deadline > DateOnly.FromDateTime(DateTime.Now))
             .WithMessage("Son tarix indiki vaxtdan sonra olmalıdır."); 
 

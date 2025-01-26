@@ -47,7 +47,7 @@ public class ThemeService : IThemeService
         if (userId <= 0)
             return new BaseResponse<ICollection<GetThemeDto>> (null);
 
-        var data = await _db.Themes.Where(x => !x.IsDeleted && x.CreatedBy == userId).ToListAsync();
+        var data = await _db.Themes.Where(x => !x.IsDeleted && x.CreatedBy == userId).OrderByDescending(x => x.CreateAt).ToListAsync();
         if (data == null)
             return new BaseResponse<ICollection<GetThemeDto>> (null);
 

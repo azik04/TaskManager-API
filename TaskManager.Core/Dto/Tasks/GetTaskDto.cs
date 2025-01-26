@@ -1,4 +1,6 @@
-﻿namespace TaskManager.Core.Dto.Tasks;
+﻿using TaskManager.DataProvider.Enums;
+
+namespace TaskManager.Core.Dto.Tasks;
 
 public class GetTaskDto
 {
@@ -11,15 +13,15 @@ public class GetTaskDto
     public string Priority { get; set; }
     public DateOnly? DeadLine { get; set; }
     public long ThemeId { get; set; }
-    public DateTime DateOfCompletion { get; set; }
-    public string Contact { get; set; }
+    public DateTime? DateOfCompletion { get; set; }
+    public string? Contact { get; set; }
     public bool IsCompleted { get; set; }
 
-    public bool isSeen { get; set; }
+    public bool? isSeen { get; set; }
 
     public long? ExecutiveUserId { get; set; }
     public string? ExecutiveUserName { get; set; }
-    public IList<long> UserId { get; set; }
+    public IList<long>? UserId { get; set; }
 
-    public ICollection<string> UserNames { get; set; }
+    public ICollection<string>? UserNames { get; set; }
 }

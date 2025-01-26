@@ -8,23 +8,27 @@ public class UpdateTaskDtoValidation : AbstractValidator<UpdateTaskDto>
     public UpdateTaskDtoValidation()
     {
         RuleFor(x => x.TaskName)
-            .NotEmpty()
-            .WithMessage("Tapşırıq adı tələb olunur.");
+             .NotEmpty()
+             .WithMessage("Tapşırıq adı tələb olunur.");
 
         RuleFor(x => x.TaskDescription)
             .NotEmpty()
             .WithMessage("Tapşırıq təsviri tələb olunur.");
 
-        RuleFor(x => x.Status)
-            .IsInEnum()
-            .WithMessage("Seçilmiş status yanlışdır.");
-
         RuleFor(x => x.Priority)
-            .IsInEnum()
-            .WithMessage("Seçilmiş prioritet yanlışdır.");
+             .NotEmpty()
+             .WithMessage("Tapşırıq adı tələb olunur.");
+
+
+        RuleFor(x => x.Status)
+            .NotEmpty()
+            .WithMessage("Tapşırıq adı tələb olunur.");
+
+
 
         RuleFor(x => x.DeadLine)
             .Must(deadline => deadline > DateOnly.FromDateTime(DateTime.Now))
             .WithMessage("Son tarix indiki vaxtdan sonra olmalıdır.");
+
     }
 }

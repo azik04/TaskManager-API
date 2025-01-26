@@ -54,8 +54,8 @@ public class TaskService : ITaskService
                 UserId = item,
             };
             await _db.UserTask.AddAsync(msg);
-            await _db.SaveChangesAsync();
         }
+        await _db.SaveChangesAsync();
       
         var user = await _db.Users.SingleOrDefaultAsync(x => x.Id == data.ExecutiveUserId);
         var users = await _db.Users.Where(x => data.UserId.Contains(x.Id)).ToListAsync();
@@ -67,8 +67,8 @@ public class TaskService : ITaskService
             TaskDescription = data.TaskDescription,
             CreateAt = data.CreateAt,
             ExecutiveUserId = data.ExecutiveUserId,
-            Priority = data.Priority.ToString(),
-            Status = data.Status.ToString(),
+            Priority = data.Priority,
+            Status = data.Status,
             ThemeId = data.ThemeId,
             UserId = data.UserId,
             IsCompleted = data.IsCompleted,
@@ -76,7 +76,7 @@ public class TaskService : ITaskService
             isDeleted = data.IsDeleted,
             DateOfCompletion = data.DateOfCompletion,
             TaskName = data.TaskName,
-            ExecutiveUserName = user?.FullName,
+            ExecutiveUserName = user?.FullName + (user?.FullName != null ? " (Icraci)" : ""),
             UserNames = users.Select(u => u.FullName).ToList()
         };
 
@@ -91,11 +91,9 @@ public class TaskService : ITaskService
         var data = await _db.Tasks.Where(x => x.IsCompleted && !x.IsDeleted && x.ThemeId == themeId).OrderByDescending(x => x.CreateAt).ToListAsync(); 
         var dtos = new List<GetTaskDto>();
 
-        var not = await _db.UserTask.SingleOrDefaultAsync(x => x.UserId == userId);
-
         foreach (var item in data)
         {
-            var msg = await _db.UserTask.Where(x => x.TaskId == item.Id).ToListAsync();
+            var not = await _db.UserTask.SingleOrDefaultAsync(x => x.TaskId == item.Id && x.UserId == userId);
             var user = await _db.Users.SingleOrDefaultAsync(x => x.Id == item.ExecutiveUserId);
             var users = await _db.Users.Where(x => item.UserId.ToList().Contains(x.Id)).ToListAsync();
 
@@ -106,8 +104,8 @@ public class TaskService : ITaskService
                 TaskDescription = item.TaskDescription,
                 CreateAt = item.CreateAt,
                 ExecutiveUserId = item.ExecutiveUserId,
-                Priority = item.Priority.ToString(),
-                Status = item.Status.ToString(),
+                Priority = item.Priority,
+                Status = item.Status,
                 ThemeId = item.ThemeId,
                 UserId = item.UserId,
                 IsCompleted = item.IsCompleted,
@@ -115,9 +113,9 @@ public class TaskService : ITaskService
                 isDeleted = item.IsDeleted,
                 DateOfCompletion = item.DateOfCompletion,
                 TaskName = item.TaskName,
-                ExecutiveUserName = user?.FullName,
+                ExecutiveUserName = user?.FullName + (user?.FullName != null ? " (Icraci)" : ""),
                 UserNames = users.Select(u => u.FullName).ToList(),
-                isSeen = not.isSeen
+                isSeen = not?.isSeen
 
             };
             dtos.Add(dto);
@@ -138,11 +136,12 @@ public class TaskService : ITaskService
 
         var dtos = new List<GetTaskDto>();
 
-        var not = await _db.UserTask.SingleOrDefaultAsync(x => x.UserId == userId);
         foreach (var item in data)
         {
+            var not = await _db.UserTask.SingleOrDefaultAsync(x => x.TaskId == item.Id && x.UserId == userId);
             var user = await _db.Users.SingleOrDefaultAsync(x => x.Id == item.ExecutiveUserId);
             var users = await _db.Users.Where(x => item.UserId.Contains(x.Id)).ToListAsync();
+
             var dto = new GetTaskDto
             {
                 Id = item.Id,
@@ -150,8 +149,8 @@ public class TaskService : ITaskService
                 TaskDescription = item.TaskDescription,
                 CreateAt = item.CreateAt,
                 ExecutiveUserId = item.ExecutiveUserId,
-                Priority = item.Priority.ToString(),
-                Status = item.Status.ToString(),
+                Priority = item.Priority,
+                Status = item.Status,
                 ThemeId = item.ThemeId,
                 UserId = item.UserId,  
                 IsCompleted = item.IsCompleted,
@@ -159,9 +158,9 @@ public class TaskService : ITaskService
                 isDeleted = item.IsDeleted,
                 DateOfCompletion = item.DateOfCompletion,
                 TaskName = item.TaskName,
-                ExecutiveUserName = user?.FullName, 
+                ExecutiveUserName = user?.FullName + (user?.FullName != null ? " (Icraci)" : ""),
                 UserNames = users.Select(u => u.FullName).ToList(),
-                isSeen = not.isSeen
+                isSeen = not?.isSeen
             };
 
             dtos.Add(dto);
@@ -177,41 +176,44 @@ public class TaskService : ITaskService
         if (id <= 0 || userId <= 0)
             return new BaseResponse<GetTaskDto>(null);
 
-        var data = await _db.Tasks.SingleOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
-        if (data == null)
+        var task = await _db.Tasks.SingleOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
+        if (task == null)
             return new BaseResponse<GetTaskDto>(null);
 
-        var msg = await _db.UserTask.SingleOrDefaultAsync(x => x.TaskId == data.Id && x.UserId == userId);
-        msg.isSeen = false;
+        var userTask = await _db.UserTask.SingleOrDefaultAsync(x => x.TaskId == task.Id && x.UserId == userId);
+        if (userTask != null)
+        {
+            userTask.isSeen = false;
+            _db.UserTask.Update(userTask);
+            await _db.SaveChangesAsync();
+        }
 
-        _db.UserTask.Update(msg);
-        await _db.SaveChangesAsync();
-
-        var user = await _db.Users.SingleOrDefaultAsync(x => x.Id == data.ExecutiveUserId);
-        var users = await _db.Users.Where(x => data.UserId.Contains(x.Id)).ToListAsync();
+        var executiveUser = await _db.Users.SingleOrDefaultAsync(x => x.Id == task.ExecutiveUserId);
+        var assignedUsers = await _db.Users.Where(x => task.UserId.Contains(x.Id)).ToListAsync();
 
         var dto = new GetTaskDto
         {
-            Id = data.Id,
-            DeadLine = data.DeadLine,
-            TaskDescription = data.TaskDescription,
-            CreateAt = data.CreateAt,
-            ExecutiveUserId = data.ExecutiveUserId,
-            Priority = data.Priority.ToString(),
-            Status = data.Status.ToString(),
-            ThemeId = data.ThemeId,
-            UserId = data.UserId,
-            IsCompleted = data.IsCompleted,
-            Contact = data.Contact,
-            isDeleted = data.IsDeleted,
-            DateOfCompletion = data.DateOfCompletion,
-            TaskName = data.TaskName,
-            ExecutiveUserName = user?.FullName,
-            UserNames = users.Select(u => u.FullName).ToList()
+            Id = task.Id,
+            DeadLine = task.DeadLine,
+            TaskDescription = task.TaskDescription,
+            CreateAt = task.CreateAt,
+            ExecutiveUserId = task.ExecutiveUserId,
+            Priority = task.Priority,
+            Status = task.Status,
+            ThemeId = task.ThemeId,
+            UserId = task.UserId,
+            IsCompleted = task.IsCompleted,
+            Contact = task.Contact,
+            isDeleted = task.IsDeleted,
+            DateOfCompletion = task.DateOfCompletion,
+            TaskName = task.TaskName,
+            ExecutiveUserName = executiveUser?.FullName + (executiveUser?.FullName != null ? " (Icraci)" : ""),
+            UserNames = assignedUsers.Select(u => u.FullName).ToList()
         };
-        
+
         return new BaseResponse<GetTaskDto>(dto);
     }
+
 
     public async Task<BaseResponse<GetTaskDto>> Remove(long id)
     {
@@ -238,8 +240,8 @@ public class TaskService : ITaskService
             TaskDescription = data.TaskDescription,
             CreateAt = data.CreateAt,
             ExecutiveUserId = data.ExecutiveUserId,
-            Priority = data.Priority.ToString(),
-            Status = data.Status.ToString(),
+            Priority = data.Priority,
+            Status = data.Status,
             ThemeId = data.ThemeId,
             UserId = data.UserId,
             IsCompleted = data.IsCompleted,
@@ -247,7 +249,7 @@ public class TaskService : ITaskService
             isDeleted = data.IsDeleted,
             DateOfCompletion = data.DateOfCompletion,
             TaskName = data.TaskName,
-            ExecutiveUserName = user?.FullName,
+            ExecutiveUserName = user?.FullName + (user?.FullName != null ? " (Icraci)" : ""),
             UserNames = users.Select(u => u.FullName).ToList()
         };
 
@@ -268,7 +270,9 @@ public class TaskService : ITaskService
         data.DeadLine = task.DeadLine;
         data.TaskDescription = task.TaskDescription;
         data.TaskName = task.TaskName;
-
+        data.ExecutiveUserId = task.ExecutiveUserId ;
+        data.UserId = task.UserTasks;
+       
         _db.Tasks.Update(data);
         await _db.SaveChangesAsync();
 
@@ -291,8 +295,8 @@ public class TaskService : ITaskService
             TaskDescription = data.TaskDescription,
             CreateAt = data.CreateAt,
             ExecutiveUserId = data.ExecutiveUserId,
-            Priority = data.Priority.ToString(),
-            Status = data.Status.ToString(),
+            Priority = data.Priority,
+            Status = data.Status,
             ThemeId = data.ThemeId,
             UserId = data.UserId,
             IsCompleted = data.IsCompleted,
@@ -300,8 +304,8 @@ public class TaskService : ITaskService
             isDeleted = data.IsDeleted,
             DateOfCompletion = data.DateOfCompletion,
             TaskName = data.TaskName,
-            ExecutiveUserName = user?.FullName,
-            UserNames = users.Select(u => u.FullName).ToList()
+            ExecutiveUserName = user?.FullName + (user?.FullName != null ? " (Icraci)" : ""),
+            UserNames = users?.Select(u => u.FullName).ToList()
         };
 
         return new BaseResponse<GetTaskDto>(dto);
@@ -315,8 +319,16 @@ public class TaskService : ITaskService
         if (data == null)
             return new BaseResponse<GetTaskDto>(null);
 
-        data.IsCompleted = !data.IsCompleted;
-
+        if (data.IsCompleted)
+        {
+            data.IsCompleted = false;
+            data.DateOfCompletion = null;  
+        }
+        else
+        {
+            data.IsCompleted = true;
+            data.DateOfCompletion = DateTime.Now;  
+        }
         _db.Tasks.Update(data);
         await _db.SaveChangesAsync();
 
@@ -333,8 +345,8 @@ public class TaskService : ITaskService
             TaskDescription = data.TaskDescription,
             CreateAt = data.CreateAt,
             ExecutiveUserId = data.ExecutiveUserId,
-            Priority = data.Priority.ToString(),
-            Status = data.Status.ToString(),
+            Priority = data.Priority,
+            Status = data.Status,
             ThemeId = data.ThemeId,
             UserId = data.UserId,
             IsCompleted = data.IsCompleted,
@@ -342,7 +354,7 @@ public class TaskService : ITaskService
             isDeleted = data.IsDeleted,
             DateOfCompletion = data.DateOfCompletion,
             TaskName = data.TaskName,
-            ExecutiveUserName = user?.FullName,
+            ExecutiveUserName = user?.FullName + (user?.FullName != null ? " (Icraci)" : ""),
             UserNames = users.Select(u => u.FullName).ToList()
         };
 

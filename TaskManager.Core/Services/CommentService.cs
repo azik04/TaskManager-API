@@ -47,19 +47,27 @@ public class CommentService : ICommentService
             return new BaseResponse<ICollection<GetCommentDto>>(null);
 
 
-        var data = await _db.Comments.Where(x => x.TaskId == taskId && !x.IsDeleted).ToListAsync();
+        var data = await _db.Comments.Where(x => x.TaskId == taskId && !x.IsDeleted).OrderByDescending(x => x.CreateAt).ToListAsync();
+        
+        var dtos = new List<GetCommentDto>();
 
-        var dto = data.Select(comment => new GetCommentDto
+        foreach (var item in data)
         {
-            Id = comment.Id,
-            Message = comment.Message,
-            TaskId = comment.TaskId,
-            UserId = comment.UserId,
-            IsDeleted = comment.IsDeleted,
-            CreateAt = comment.CreateAt,
-        }).ToList();
+            var user = await _db.Users.FirstAsync(x => x.Id == item.UserId);
+            var dto = new GetCommentDto
+            {
+                Id = item.Id,
+                Message = item.Message,
+                TaskId = item.TaskId,
+                UserId = item.UserId,
+                IsDeleted = item.IsDeleted,
+                CreateAt = item.CreateAt,
+                UserName = user.FullName,
+            };
+            dtos.Add(dto);
+        }
 
-        return new BaseResponse<ICollection<GetCommentDto>>(dto);
+        return new BaseResponse<ICollection<GetCommentDto>>(dtos);
     }
 
     public async Task<BaseResponse<GetCommentDto>> Remove(long id)

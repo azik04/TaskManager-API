@@ -7,15 +7,15 @@ namespace TaskManager.DataProvider.Entities
     {
         public string TaskName { get; set; }
         public string TaskDescription { get; set; }
-        public Status Status { get; set; }
-        public Priority Priority { get; set; }
+        public string Status { get; set; }
+        public string Priority { get; set; }
         public DateOnly? DeadLine { get; set; }
         public long ThemeId { get; set; }
-        public DateTime DateOfCompletion { get; set; }
-        public string Contact { get; set; }
+        public DateTime? DateOfCompletion { get; set; }
+        public string? Contact { get; set; }
         public bool IsCompleted { get; set; }
         public long? ExecutiveUserId { get; set; }
-        public IList<long> UserId { get; set; }
+        public IList<long>? UserId { get; set; }
 
         public virtual Users ExecutiveUser { get; set; }
         public virtual ICollection<Users> Users { get; set; }

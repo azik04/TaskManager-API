@@ -7,5 +7,6 @@ public class GetCommentDto
     public DateTime CreateAt { get; set; }
     public string Message { get; set; }
     public long UserId { get; set; }
+    public string UserName { get; set; }
     public long TaskId { get; set; }
 }
