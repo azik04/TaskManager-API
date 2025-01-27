@@ -15,10 +15,14 @@ namespace TaskManager.Core.Validation.Task
             RuleFor(x => x.TaskDescription)
                 .NotEmpty()
                 .WithMessage("Tapşırıq təsviri tələb olunur.");
-            
+
             RuleFor(x => x.Priority)
                 .NotEmpty()
                 .WithMessage("Tapşırıq adı tələb olunur.");
+
+            RuleFor(x => x.ExecutiveUserId)
+                .NotEqual(0)
+                .WithMessage("Tapşırıqın İcracisi tələb olunur.");
 
             RuleFor(x => x.Status)
                 .NotEmpty()

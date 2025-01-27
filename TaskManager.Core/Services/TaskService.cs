@@ -18,11 +18,11 @@ public class TaskService : ITaskService
 
     public async Task<BaseResponse<GetTaskDto>> Create([FromBody] CreateTaskDto task)
     {
-        var th = await _db.Themes.SingleOrDefaultAsync(x => x.Id == task.ThemeId);
-        if (th == null)
-            return new BaseResponse<GetTaskDto>(null, false, "Theme aint exists");
+        var theme = await _db.Themes.SingleOrDefaultAsync(x => x.Id == task.ThemeId);
+        if (theme == null)
+            return new BaseResponse<GetTaskDto>(null, false, "Theme does not exist");
 
-        var data = new Tasks
+        var newTask = new Tasks
         {
             TaskName = task.TaskName,
             TaskDescription = task.TaskDescription,
@@ -36,52 +36,49 @@ public class TaskService : ITaskService
             Contact = task.Contact
         };
 
-        await _db.Tasks.AddAsync(data);
+        await _db.Tasks.AddAsync(newTask);
         await _db.SaveChangesAsync();
 
-        foreach (var item in data.UserId)
+        if (newTask.UserId?.Any() == true)
         {
-            var userExists = await _db.Users.AnyAsync(x => x.Id == item);
-            if (!userExists)
-                return new BaseResponse<GetTaskDto>(null, false, $"User with ID {item} does not exist");
-
-
-            var msg = new UserTasks
+            var userTasks = newTask.UserId.Select(userId => new UserTasks
             {
                 CreateAt = DateTime.Now,
-                TaskId = data.Id,
+                TaskId = newTask.Id,
                 isSeen = false,
-                UserId = item,
-            };
-            await _db.UserTask.AddAsync(msg);
+                UserId = userId
+            }).ToList();
+
+            await _db.UserTask.AddRangeAsync(userTasks);
+            await _db.SaveChangesAsync();
         }
-        await _db.SaveChangesAsync();
-      
-        var user = await _db.Users.SingleOrDefaultAsync(x => x.Id == data.ExecutiveUserId);
-        var users = await _db.Users.Where(x => data.UserId.Contains(x.Id)).ToListAsync();
-    
-        var dto = new GetTaskDto
+
+        var executiveUser = await _db.Users.SingleOrDefaultAsync(x => x.Id == newTask.ExecutiveUserId);
+        var assignedUsers = await _db.Users.Where(x => newTask.UserId.Contains(x.Id)).ToListAsync();
+
+        var taskDto = new GetTaskDto
         {
-            Id = data.Id,
-            DeadLine = data.DeadLine,
-            TaskDescription = data.TaskDescription,
-            CreateAt = data.CreateAt,
-            ExecutiveUserId = data.ExecutiveUserId,
-            Priority = data.Priority,
-            Status = data.Status,
-            ThemeId = data.ThemeId,
-            UserId = data.UserId,
-            IsCompleted = data.IsCompleted,
-            Contact = data.Contact,
-            isDeleted = data.IsDeleted,
-            DateOfCompletion = data.DateOfCompletion,
-            TaskName = data.TaskName,
-            ExecutiveUserName = user?.FullName + (user?.FullName != null ? " (Icraci)" : ""),
-            UserNames = users.Select(u => u.FullName).ToList()
+            Id = newTask.Id,
+            DeadLine = newTask.DeadLine,
+            TaskDescription = newTask.TaskDescription,
+            CreateAt = newTask.CreateAt,
+            ExecutiveUserId = newTask.ExecutiveUserId,
+            Priority = newTask.Priority,
+            Status = newTask.Status,
+            ThemeId = newTask.ThemeId,
+            UserId = newTask.UserId,
+            IsCompleted = newTask.IsCompleted,
+            Contact = newTask.Contact,
+            isDeleted = newTask.IsDeleted,
+            DateOfCompletion = newTask.DateOfCompletion,
+            TaskName = newTask.TaskName,
+            ExecutiveUserName = executiveUser?.FullName + (executiveUser?.FullName != null ? " (Executor)" : ""),
+            UserNames = assignedUsers.Select(u => u.FullName).ToList()
         };
 
-        return new BaseResponse<GetTaskDto>(dto);
+        return new BaseResponse<GetTaskDto>(taskDto);
     }
+
 
     public async Task<BaseResponse<ICollection<GetTaskDto>>> GetAllDone(long themeId , long userId)
     {

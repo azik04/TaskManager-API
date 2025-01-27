@@ -17,8 +17,8 @@ namespace TaskManager.DataProvider.Entities
         public long? ExecutiveUserId { get; set; }
         public IList<long>? UserId { get; set; }
 
-        public virtual Users ExecutiveUser { get; set; }
-        public virtual ICollection<Users> Users { get; set; }
+        public virtual Users? ExecutiveUser { get; set; }
+        public virtual ICollection<Users>? Users { get; set; }
         public virtual Themes Theme { get; set; }
 
         public virtual ICollection<Files> Files { get; set; }
