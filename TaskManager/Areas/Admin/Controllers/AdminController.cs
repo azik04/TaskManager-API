@@ -47,7 +47,6 @@ public class AdminController : ControllerBase
 
 
     [HttpGet("User")]
-    [Authorize(Policy = "Admin")]
     public async Task<IActionResult> GetAllUsers()
     {
         var res = await _service.GetUser();

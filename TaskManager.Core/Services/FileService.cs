@@ -115,6 +115,13 @@ public class FileService : IFileService
             };
 
             await _db.Files.AddAsync(file);
+
+            var userTask = await _db.UserTask.Where(x => x.TaskId == dto.TaskId).ToListAsync();
+            foreach(var item  in userTask)
+            {
+                item.isSeen = true;
+                _db.UserTask.Update(item);
+            }
             await _db.SaveChangesAsync();
 
             var fileDto = new GetFileDto

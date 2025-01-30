@@ -10,6 +10,9 @@ public class SubTaskConfiguration : IEntityTypeConfiguration<SubTasks>
     {
         builder.HasKey(t => t.Id);
 
+        builder.Property(t => t.Id)
+       .ValueGeneratedOnAdd();
+
         builder.HasOne(c => c.User)
            .WithMany(u => u.CoTasks)
            .HasForeignKey(c => c.UserId)
@@ -19,9 +22,6 @@ public class SubTaskConfiguration : IEntityTypeConfiguration<SubTasks>
            .WithMany(u => u.CoTasks)
            .HasForeignKey(c => c.TaskId)
            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.Property(x => x.Priority)
-            .HasConversion<int>();
     }
 
 }

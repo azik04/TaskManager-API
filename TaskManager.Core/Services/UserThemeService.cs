@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using TaskManager.Core.Dto.UserTask;
 using TaskManager.Core.Dto.UserTheme;
 using TaskManager.Core.Interfaces;
 using TaskManager.DataProvider.Context;
@@ -17,6 +18,12 @@ public class UserThemeService : IUserThemeService
 
     public async Task<BaseResponse<GetUserThemeDto>> CreateAsync(CreateUserThemeDto dto)
     {
+        var userTask = await _db.UserThemes.FirstOrDefaultAsync(x => x.UserId == dto.UserId && x.ThemeId == dto.ThemeId);
+        if (userTask != null)
+        {
+            return new BaseResponse<GetUserThemeDto>(null, false, "User is in a theme");
+        }
+
         var data = new UserThemes
         {
             ThemeId = dto.ThemeId,
@@ -49,7 +56,9 @@ public class UserThemeService : IUserThemeService
         if (userId <= 0)
             return new BaseResponse<ICollection<GetUserThemeDto>>(null);
 
-        var datas = await _db.UserThemes.Where(x => x.UserId == userId && !x.IsDeleted).ToListAsync();
+        var datas = await _db.UserThemes
+                             .Where(x => x.UserId == userId && !x.IsDeleted && !_db.Themes.Any(t => t.Id == x.ThemeId && t.CreatedBy == userId))
+                             .ToListAsync();
         var dtos = new List<GetUserThemeDto>();
 
         foreach (var item in datas)
@@ -67,12 +76,14 @@ public class UserThemeService : IUserThemeService
                 ThemeName = theme.Name,
                 isDeleted = item.IsDeleted,
                 CreateAt = item.CreateAt,
-                CreatedBy = crtBy?.FullName,
+                CreatedBy = crtBy.FullName,
             };
             dtos.Add(ndto);
         }
+
         return new BaseResponse<ICollection<GetUserThemeDto>>(dtos);
     }
+
 
     public async Task<BaseResponse<ICollection<GetUserThemeDto>>> GetUsersAsync(long themeId)
     {
@@ -112,6 +123,9 @@ public class UserThemeService : IUserThemeService
             return new BaseResponse<GetUserThemeDto>(null);
 
         data.IsDeleted = true;
+
+        _db.UserThemes.Update(data);
+        await _db.SaveChangesAsync();
 
         var theme = await _db.Themes.FindAsync(data.ThemeId);
         var user = await _db.Users.FindAsync(data.UserId);

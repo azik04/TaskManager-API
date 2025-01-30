@@ -30,9 +30,9 @@ public class SubTaskController : ControllerBase
 
     [HttpGet("Task/{taskId}/NotDone")]
     [Authorize(Policy = "User")]
-    public async Task<IActionResult> GetByTaskNotDone(long TaskId)
+    public async Task<IActionResult> GetByTaskNotDone(long taskId)
     {
-        var res = await _service.GetByTaskNotDone(TaskId);
+        var res = await _service.GetByTaskNotDone(taskId);
         if (res.Success)
             return Ok(res);
 
@@ -53,9 +53,9 @@ public class SubTaskController : ControllerBase
 
     [HttpGet("Task/{taskId}/Done")]
     [Authorize(Policy = "User")]
-    public async Task<IActionResult> GetByTaskDone(long TaskId)
+    public async Task<IActionResult> GetByTaskDone(long taskId)
     {
-        var res = await _service.GetByTaskDone(TaskId);
+        var res = await _service.GetByTaskDone(taskId);
         if (res.Success)
             return Ok(res);
 

@@ -21,7 +21,7 @@ namespace TaskManager.Core.Validation.Task
                 .WithMessage("Tapşırıq adı tələb olunur.");
 
             RuleFor(x => x.ExecutiveUserId)
-                .NotEqual(0)
+                .NotEmpty()
                 .WithMessage("Tapşırıqın İcracisi tələb olunur.");
 
             RuleFor(x => x.Status)

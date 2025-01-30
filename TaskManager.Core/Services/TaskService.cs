@@ -16,7 +16,9 @@ public class TaskService : ITaskService
         _db = db;
     }
 
-    public async Task<BaseResponse<GetTaskDto>> Create([FromBody] CreateTaskDto task)
+
+
+    public async Task<BaseResponse<GetTaskDto>> Create([FromBody] CreateTaskDto task, long userId)
     {
         var theme = await _db.Themes.SingleOrDefaultAsync(x => x.Id == task.ThemeId);
         if (theme == null)
@@ -31,7 +33,7 @@ public class TaskService : ITaskService
             DeadLine = task.DeadLine,
             ThemeId = task.ThemeId,
             ExecutiveUserId = task.ExecutiveUserId,
-            CreateAt = DateTime.Now,
+            CreateAt = DateTime.UtcNow,
             UserId = task.UserId,
             Contact = task.Contact
         };
@@ -39,22 +41,48 @@ public class TaskService : ITaskService
         await _db.Tasks.AddAsync(newTask);
         await _db.SaveChangesAsync();
 
-        if (newTask.UserId?.Any() == true)
-        {
-            var userTasks = newTask.UserId.Select(userId => new UserTasks
-            {
-                CreateAt = DateTime.Now,
-                TaskId = newTask.Id,
-                isSeen = false,
-                UserId = userId
-            }).ToList();
+        var userTheme = await _db.UserThemes.Where(x => x.ThemeId == task.ThemeId).ToListAsync();
 
-            await _db.UserTask.AddRangeAsync(userTasks);
-            await _db.SaveChangesAsync();
+        var userTasks = new List<UserTasks>();
+
+        if (userTheme?.Any() == true)
+        {
+            userTasks.AddRange(userTheme.Select(item => new UserTasks
+            {
+                TaskId = newTask.Id,
+                UserId = item.UserId,
+                CreateAt = DateTime.UtcNow,
+                isSeen = true
+            }));
         }
 
+        if (task.UserId?.Any() == true)
+        {
+            userTasks.AddRange(task.UserId.Select(assignedUserId => new UserTasks
+            {
+                TaskId = newTask.Id,
+                UserId = assignedUserId,
+                CreateAt = DateTime.UtcNow,
+                isSeen = false
+            }));
+        }
+
+        if (newTask.ExecutiveUserId != null && !userTasks.Any(ut => ut.UserId == newTask.ExecutiveUserId.Value))
+        {
+            userTasks.Add(new UserTasks
+            {
+                TaskId = newTask.Id,
+                UserId = newTask.ExecutiveUserId.Value,
+                CreateAt = DateTime.UtcNow,
+                isSeen = false
+            });
+        }
+
+        await _db.UserTask.AddRangeAsync(userTasks);
+        await _db.SaveChangesAsync();
+
         var executiveUser = await _db.Users.SingleOrDefaultAsync(x => x.Id == newTask.ExecutiveUserId);
-        var assignedUsers = await _db.Users.Where(x => newTask.UserId.Contains(x.Id)).ToListAsync();
+        var assignedUsers = await _db.Users.Where(x => userTasks.Select(ut => ut.UserId).Contains(x.Id)).ToListAsync();
 
         var taskDto = new GetTaskDto
         {
@@ -66,18 +94,23 @@ public class TaskService : ITaskService
             Priority = newTask.Priority,
             Status = newTask.Status,
             ThemeId = newTask.ThemeId,
-            UserId = newTask.UserId,
+            UserId = task.UserId,
             IsCompleted = newTask.IsCompleted,
             Contact = newTask.Contact,
             isDeleted = newTask.IsDeleted,
             DateOfCompletion = newTask.DateOfCompletion,
             TaskName = newTask.TaskName,
-            ExecutiveUserName = executiveUser?.FullName + (executiveUser?.FullName != null ? " (Executor)" : ""),
-            UserNames = assignedUsers.Select(u => u.FullName).ToList()
+            ExecutiveUserName = executiveUser?.FullName != null
+                ? $"{executiveUser.FullName} (Executor)"
+                : null,
+            UserNames = assignedUsers.Select(u => u.FullName).ToList(),
+            isSeen = false
         };
 
-        return new BaseResponse<GetTaskDto>(taskDto);
+        return new BaseResponse<GetTaskDto>(taskDto, true, "Task created successfully.");
     }
+
+
 
 
     public async Task<BaseResponse<ICollection<GetTaskDto>>> GetAllDone(long themeId , long userId)
@@ -90,9 +123,11 @@ public class TaskService : ITaskService
 
         foreach (var item in data)
         {
-            var not = await _db.UserTask.SingleOrDefaultAsync(x => x.TaskId == item.Id && x.UserId == userId);
+            var not = await _db.UserTask.FirstOrDefaultAsync(x => x.TaskId == item.Id && x.UserId == userId);
             var user = await _db.Users.SingleOrDefaultAsync(x => x.Id == item.ExecutiveUserId);
-            var users = await _db.Users.Where(x => item.UserId.ToList().Contains(x.Id)).ToListAsync();
+            var users = await _db.Users
+                .Where(x => item.UserId != null && item.UserId.Contains(x.Id))
+                .ToListAsync();
 
             var dto = new GetTaskDto
             {
@@ -135,8 +170,8 @@ public class TaskService : ITaskService
 
         foreach (var item in data)
         {
-            var not = await _db.UserTask.SingleOrDefaultAsync(x => x.TaskId == item.Id && x.UserId == userId);
-            var user = await _db.Users.SingleOrDefaultAsync(x => x.Id == item.ExecutiveUserId);
+            var not = await _db.UserTask.FirstOrDefaultAsync(x => x.TaskId == item.Id && x.UserId == userId);
+            var user = await _db.Users.FirstOrDefaultAsync(x => x.Id == item.ExecutiveUserId);
             var users = await _db.Users.Where(x => item.UserId.Contains(x.Id)).ToListAsync();
 
             var dto = new GetTaskDto
@@ -177,7 +212,7 @@ public class TaskService : ITaskService
         if (task == null)
             return new BaseResponse<GetTaskDto>(null);
 
-        var userTask = await _db.UserTask.SingleOrDefaultAsync(x => x.TaskId == task.Id && x.UserId == userId);
+        var userTask = await _db.UserTask.FirstOrDefaultAsync(x => x.TaskId == task.Id && x.UserId == userId);
         if (userTask != null)
         {
             userTask.isSeen = false;
@@ -205,7 +240,8 @@ public class TaskService : ITaskService
             DateOfCompletion = task.DateOfCompletion,
             TaskName = task.TaskName,
             ExecutiveUserName = executiveUser?.FullName + (executiveUser?.FullName != null ? " (Icraci)" : ""),
-            UserNames = assignedUsers.Select(u => u.FullName).ToList()
+            UserNames = assignedUsers.Select(u => u.FullName).ToList(),
+            isSeen = userTask?.isSeen
         };
 
         return new BaseResponse<GetTaskDto>(dto);
@@ -302,7 +338,7 @@ public class TaskService : ITaskService
             DateOfCompletion = data.DateOfCompletion,
             TaskName = data.TaskName,
             ExecutiveUserName = user?.FullName + (user?.FullName != null ? " (Icraci)" : ""),
-            UserNames = users?.Select(u => u.FullName).ToList()
+            UserNames = users?.Select(u => u.FullName).ToList(),
         };
 
         return new BaseResponse<GetTaskDto>(dto);

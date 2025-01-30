@@ -12,7 +12,7 @@ public class UpdateSubTaskDtoValidation : AbstractValidator<UpdateSubTaskDto>
             .WithMessage("Alt tapşırıq adı tələb olunur.");
 
         RuleFor(x => x.Priority)
-            .IsInEnum()
+            .NotEmpty()
             .WithMessage("Seçilmiş prioritet yanlışdır.");
 
         RuleFor(x => x.DeadLine)

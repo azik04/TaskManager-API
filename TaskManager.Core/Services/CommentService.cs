@@ -26,6 +26,14 @@ public class CommentService : ICommentService
         };
 
         await _db.Comments.AddAsync(data);
+
+        var useTask = await _db.UserTask.Where(x => x.TaskId == comment.TaskId).ToListAsync();
+        foreach (var item in useTask)
+        {
+            item.isSeen = true;
+            _db.UserTask.Update(item);
+        }
+
         await _db.SaveChangesAsync();
 
         var dto = new GetCommentDto
@@ -37,6 +45,9 @@ public class CommentService : ICommentService
             IsDeleted = data.IsDeleted,
             CreateAt = data.CreateAt,
         };
+
+    
+
 
         return new BaseResponse<GetCommentDto>(dto);
     }

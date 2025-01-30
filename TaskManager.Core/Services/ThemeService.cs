@@ -31,6 +31,16 @@ public class ThemeService : IThemeService
         await _db.Themes.AddAsync(data);
         await _db.SaveChangesAsync();
 
+        var userTheme = new UserThemes
+        {
+            ThemeId = data.Id,
+            UserId = data.CreatedBy,
+            CreateAt = DateTime.Now,
+        };
+
+        await _db.UserThemes.AddAsync(userTheme);
+        await _db.SaveChangesAsync();
+
         var dto = new GetThemeDto
         {
             CreateAt = data.CreateAt,

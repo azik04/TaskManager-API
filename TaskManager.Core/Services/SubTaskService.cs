@@ -24,9 +24,18 @@ public class SubTaskService : ISubTaskService
             UserId = subTask.UserId,
             CreateAt = DateTime.Now,
             TaskId = subTask.TaskId,
+
         };
         
         await _db.SubTasks.AddAsync(data);
+        await _db.SaveChangesAsync();
+
+        var userTask = await _db.UserTask.Where(x => x.TaskId == subTask.TaskId).ToListAsync();
+        foreach (var item in userTask)
+        {
+            item.isSeen = true;
+            _db.UserTask.Update(item);
+        }
         await _db.SaveChangesAsync();
 
         var user = await _db.Users.SingleOrDefaultAsync(x => x.Id == data.UserId);
@@ -38,7 +47,7 @@ public class SubTaskService : ISubTaskService
             IsDeleted = data.IsDeleted,
             IsCompleted = data.IsCompleted,
             Name = data.Name,
-            Priority = data.Priority.ToString(),
+            Priority = data.Priority,
             TaskId = data.TaskId,
             UserId = data.UserId,
             UserName = user.FullName,
@@ -62,13 +71,13 @@ public class SubTaskService : ISubTaskService
 
             var dto = new GetSubTaskDto
             {
-                Id = item.TaskId,
+                Id = item.Id,
                 CreateAt = item.CreateAt,
                 DeadLine = item.DeadLine,
                 IsDeleted = item.IsDeleted,
                 IsCompleted = item.IsCompleted,
                 Name = item.Name,
-                Priority = item.Priority.ToString(),
+                Priority = item.Priority,
                 TaskId = item.TaskId,
                 UserId = item.UserId,
                 UserName = user.FullName
@@ -95,13 +104,13 @@ public class SubTaskService : ISubTaskService
 
             var dto = new GetSubTaskDto
             {
-                Id = item.TaskId,
+                Id = item.Id,
                 CreateAt = item.CreateAt,
                 DeadLine = item.DeadLine,
                 IsDeleted = item.IsDeleted,
                 IsCompleted = item.IsCompleted,
                 Name = item.Name,
-                Priority = item.Priority.ToString(),
+                Priority = item.Priority,
                 TaskId = item.TaskId,
                 UserId = item.UserId,
                 UserName = user.FullName
@@ -135,7 +144,7 @@ public class SubTaskService : ISubTaskService
             IsDeleted = data.IsDeleted,
             IsCompleted = data.IsCompleted,
             Name = data.Name,
-            Priority = data.Priority.ToString(),
+            Priority = data.Priority,
             TaskId = data.TaskId,
             UserId = data.UserId,
         };
@@ -165,7 +174,7 @@ public class SubTaskService : ISubTaskService
             IsDeleted = data.IsDeleted,
             IsCompleted = data.IsCompleted,
             Name = data.Name,
-            Priority = data.Priority.ToString(),
+            Priority = data.Priority,
             TaskId = data.TaskId,
             UserId = data.UserId,
         };
@@ -197,7 +206,7 @@ public class SubTaskService : ISubTaskService
             IsDeleted = data.IsDeleted,
             IsCompleted = data.IsCompleted,
             Name = data.Name,
-            Priority = data.Priority.ToString(),
+            Priority = data.Priority,
             TaskId = data.TaskId,
             UserId = data.UserId,
         };
@@ -224,7 +233,7 @@ public class SubTaskService : ISubTaskService
             IsDeleted = data.IsDeleted,
             IsCompleted = data.IsCompleted,
             Name = data.Name,
-            Priority = data.Priority.ToString(),
+            Priority = data.Priority,
             TaskId = data.TaskId,
             UserId = data.UserId,
             UserName = user.FullName

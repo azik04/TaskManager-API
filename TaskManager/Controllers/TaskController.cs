@@ -18,9 +18,9 @@ public class TaskController : ControllerBase
 
     [HttpPost]
     [Authorize(Policy = "User")]
-    public async Task<IActionResult> Create(CreateTaskDto task)
+    public async Task<IActionResult> Create(CreateTaskDto task, long userId)
     {
-        var res = await _service.Create(task);
+        var res = await _service.Create(task, userId);
         if (res.Success)
             return Ok(res);
 

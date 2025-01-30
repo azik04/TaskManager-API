@@ -18,12 +18,12 @@ namespace TaskManager.DataProvider.Entities
         public IList<long>? UserId { get; set; }
 
         public virtual Users? ExecutiveUser { get; set; }
-        public virtual ICollection<Users>? Users { get; set; }
-        public virtual Themes Theme { get; set; }
+        //public virtual ICollection<Users>? Users { get; set; }
+        public virtual Themes? Theme { get; set; }
 
-        public virtual ICollection<Files> Files { get; set; }
-        public virtual ICollection<Comments> Comments { get; set; }
-        public virtual ICollection<SubTasks> CoTasks { get; set; }
-        public virtual ICollection<UserTasks> UserTasks { get; set; } 
+        public virtual ICollection<Files>? Files { get; set; }
+        public virtual ICollection<Comments>? Comments { get; set; }
+        public virtual ICollection<SubTasks>? CoTasks { get; set; }
+        public virtual ICollection<UserTasks>? UserTasks { get; set; } 
     }
 }

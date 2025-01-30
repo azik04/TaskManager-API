@@ -6,7 +6,7 @@ namespace TaskManager.Core.Interfaces;
 
 public interface ITaskService
 {
-    Task<BaseResponse<GetTaskDto>> Create(CreateTaskDto task);
+    Task<BaseResponse<GetTaskDto>> Create(CreateTaskDto task, long userId);
     Task<BaseResponse<ICollection<GetTaskDto>>> GetAllDone(long themeId, long userId);
     Task<BaseResponse<ICollection<GetTaskDto>>> GetAllNotDone(long themeId, long userId);
     Task<BaseResponse<GetTaskDto>> GetById(long id , long userId);
