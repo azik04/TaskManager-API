@@ -5,12 +5,12 @@ namespace TaskManager.Core.Interfaces;
 
 public interface ISubTaskService
 {
-    Task<BaseResponse<GetSubTaskDto>> Create(CreateSubTaskDto subTask);
+    Task<BaseResponse<bool>> Create(CreateSubTaskDto subTask);
     Task<BaseResponse<ICollection<GetSubTaskDto>>> GetByTaskDone(long taskId);
     Task<BaseResponse<ICollection<GetSubTaskDto>>> GetByTaskNotDone(long taskId);
     Task<BaseResponse<GetSubTaskDto>> GetById(long id);
 
-    Task<BaseResponse<GetSubTaskDto>> Remove(long id);
-    Task<BaseResponse<GetSubTaskDto>> Complete(long id);
-    Task<BaseResponse<GetSubTaskDto>> Update(long taskId, UpdateSubTaskDto subTask);
+    Task<BaseResponse<bool>> Remove(long id);
+    Task<BaseResponse<bool>> Complete(long id);
+    Task<BaseResponse<bool>> Update(long taskId, UpdateSubTaskDto subTask);
 }

@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TaskManager.Core.Dto.UserTask;
 using TaskManager.Core.Dto.UserTheme;
 using TaskManager.Core.Interfaces;
 using TaskManager.DataProvider.Context;

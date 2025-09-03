@@ -4,7 +4,7 @@ using TaskManager.Core.Interfaces;
 using TaskManager.DataProvider.Context;
 using TaskManager.DataProvider.Entities;
 using TeleSales.Core.Responses;
-
+ 
 namespace TaskManager.Core.Services;
 
 public class UserTaskService : IUserTaskService
@@ -15,34 +15,33 @@ public class UserTaskService : IUserTaskService
         _db = db;
     }
 
-    public async Task<BaseResponse<GetUserTaskDto>> CreateAsync(CreateUserTaskDto dto)
+    public async Task<BaseResponse<bool>> CreateAsync(CreateUserTaskDto dto)
     {
-        var data = new UserTasks
+        var userTask = await _db.UserTask.SingleOrDefaultAsync(x => x.UserId == dto.UserId && x.TaskId == dto.TaskId);
+        if (userTask != null)
         {
-            TaskId = dto.TaskId,
-            UserId = dto.UserId,
-            CreateAt = DateTime.Now,
-        };
+            userTask.IsDeleted = false;
+            userTask.hasUpdate = false;
+            
+            _db.UserTask.Update(userTask);
+            await _db.SaveChangesAsync();
+        }
 
-        await _db.UserTask.AddAsync(data);
-        await _db.SaveChangesAsync();
-
-        var theme = await _db.Tasks.FindAsync(dto.TaskId);
-        var user = await _db.Users.FindAsync(dto.UserId);
-
-        var ndto = new GetUserTaskDto
+        if (userTask == null)
         {
-            Id = data.Id,
-            UserId = data.UserId,
-            UserName = user.FullName,
-            TaskId = data.TaskId,
-            TaskName = theme.TaskName,
-            isDeleted = data.IsDeleted,
-            CreateAt = data.CreateAt,
-            isSeen = data.isSeen
-        };
+            var data = new UserTasks
+            {
+                TaskId = dto.TaskId,
+                UserId = dto.UserId,
+                CreateAt = DateTime.Now,
+            };
 
-        return new BaseResponse<GetUserTaskDto>(ndto);
+            await _db.UserTask.AddAsync(data);
+            await _db.SaveChangesAsync();
+        }
+
+
+        return new BaseResponse<bool>(true);
     }
 
     public async Task<BaseResponse<ICollection<GetUserTaskDto>>> GetTaskAsync(long userId)
@@ -67,7 +66,7 @@ public class UserTaskService : IUserTaskService
                 TaskName = theme.TaskName,
                 isDeleted = item.IsDeleted,
                 CreateAt = item.CreateAt,
-                isSeen = item.isSeen
+                hasUpdate = item.hasUpdate
             };
             dtos.Add(ndto);
         }
@@ -96,21 +95,21 @@ public class UserTaskService : IUserTaskService
                 TaskName = theme.TaskName,
                 isDeleted = item.IsDeleted,
                 CreateAt = item.CreateAt,
-                isSeen = item.isSeen
+                hasUpdate = item.hasUpdate
             };
             dtos.Add(ndto);
         }
         return new BaseResponse<ICollection<GetUserTaskDto>>(dtos);
     }
 
-    public async Task<BaseResponse<GetUserTaskDto>> RemoveAsync(long id)
+    public async Task<BaseResponse<bool>> RemoveAsync(long id)
     {
         if (id <= 0)
-            return new BaseResponse<GetUserTaskDto>(null);
+            return new BaseResponse<bool>(false);
 
         var data = await _db.UserTask.SingleOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
         if (data == null)
-            return new BaseResponse<GetUserTaskDto>(null);
+            return new BaseResponse<bool>(false);
 
         data.IsDeleted = true;
 
@@ -126,9 +125,9 @@ public class UserTaskService : IUserTaskService
             TaskName = theme.TaskName,
             isDeleted = data.IsDeleted,
             CreateAt = data.CreateAt,
-            isSeen = data.isSeen
+            hasUpdate = data.hasUpdate
         };
 
-        return new BaseResponse<GetUserTaskDto>(ndto);
+        return new BaseResponse<bool>(true);
     }
 }

@@ -6,7 +6,7 @@ public class UserTasks:Base
 {
     public long TaskId { get; set; }
     public long UserId { get; set; }
-    public bool isSeen { get; set; }
+    public bool hasUpdate { get; set; }
     public virtual Tasks? Tasks { get; set; }
     public virtual Users? Users { get; set; }
 }

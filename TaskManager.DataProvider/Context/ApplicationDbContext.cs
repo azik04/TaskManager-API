@@ -15,6 +15,9 @@ public class ApplicationDbContext : DbContext
     public DbSet<Themes> Themes { get; set; }
     public DbSet<Users> Users { get; set; }
     public DbSet<Comments> Comments { get; set; }
+    public DbSet<Priorities> Priorities { get; set; }
+    public DbSet<Statuses> Statuses { get; set; }
+
     public DbSet<SubTasks> SubTasks { get; set; }
     public DbSet<UserThemes> UserThemes { get; set; }
     public DbSet<UserTasks> UserTask { get; set; }
@@ -24,6 +27,8 @@ public class ApplicationDbContext : DbContext
         modelBuilder.ApplyConfiguration(new CommentConfiguration());
         modelBuilder.ApplyConfiguration(new FileConfiguration());
         modelBuilder.ApplyConfiguration(new SubTaskConfiguration());
+        modelBuilder.ApplyConfiguration(new StatusConfiguration());
+        modelBuilder.ApplyConfiguration(new PriorityConfiguration());
         modelBuilder.ApplyConfiguration(new TaskConfiguration());
         modelBuilder.ApplyConfiguration(new ThemeConfiguration());
         modelBuilder.ApplyConfiguration(new UserConfiguration());

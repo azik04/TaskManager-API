@@ -15,11 +15,11 @@ public class ThemeService : IThemeService
         _db = db;
     }
 
-    public async Task<BaseResponse<GetThemeDto>> CreateAsync(CreateThemeDto theme)
+    public async Task<BaseResponse<bool>> CreateAsync(CreateThemeDto theme)
     {
         var th = await _db.Users.SingleOrDefaultAsync(x => x.Id == theme.CreatedBy);
         if (th == null)
-            return new BaseResponse<GetThemeDto>(null , false, "User aint exists");
+            return new BaseResponse<bool>(false , false, "User aint exists");
 
         var data = new Themes
         {
@@ -49,7 +49,7 @@ public class ThemeService : IThemeService
             CreatedBy = data.CreatedBy,
             Name = data.Name,
         };
-        return new BaseResponse<GetThemeDto> ( dto );
+        return new BaseResponse<bool> ( true );
     }
 
     public async Task<BaseResponse<ICollection<GetThemeDto>>> GetAllAsync(long userId)
@@ -74,14 +74,14 @@ public class ThemeService : IThemeService
 
 
 
-    public async Task<BaseResponse<GetThemeDto>> RemoveAsync(long id)
+    public async Task<BaseResponse<bool>> RemoveAsync(long id)
     {
         if (id <= 0)
-            return new BaseResponse<GetThemeDto>(null);
+            return new BaseResponse<bool>(false);
 
         var data = await _db.Themes.SingleOrDefaultAsync(x=> x.Id == id);
         if (data == null)
-            return new BaseResponse<GetThemeDto>(null);
+            return new BaseResponse<bool>(false);
 
         data.IsDeleted = true;
 
@@ -95,17 +95,17 @@ public class ThemeService : IThemeService
             isDeleted = data.IsDeleted,
             Name = data.Name,
         };
-        return new BaseResponse<GetThemeDto>(dto);
+        return new BaseResponse<bool>(true);
     }
 
-    public async Task<BaseResponse<GetThemeDto>> UpdateAsync(long id, UpdateThemeDto theme)
+    public async Task<BaseResponse<bool>> UpdateAsync(long id, UpdateThemeDto theme)
     {
         if (id <= 0)
-            return new BaseResponse<GetThemeDto>(null);
+            return new BaseResponse<bool>(null);
 
         var data = await _db.Themes.SingleOrDefaultAsync(x => x.Id == id);
         if (data == null)
-            return new BaseResponse<GetThemeDto>(null);
+            return new BaseResponse<bool>(null);
 
         data.Name = theme.Name;
 
@@ -119,6 +119,6 @@ public class ThemeService : IThemeService
             isDeleted = data.IsDeleted,
             Name = data.Name,
         };
-        return new BaseResponse<GetThemeDto>(dto);
+        return new BaseResponse<bool>(true);
     }
 }

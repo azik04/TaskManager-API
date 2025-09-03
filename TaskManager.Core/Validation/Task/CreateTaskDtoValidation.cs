@@ -1,6 +1,4 @@
 ﻿using FluentValidation;
-using TaskManager.Core.Dto.Tasks;
-using TaskManager.DataProvider.Enums;
 
 namespace TaskManager.Core.Validation.Task
 {
@@ -16,16 +14,16 @@ namespace TaskManager.Core.Validation.Task
                 .NotEmpty()
                 .WithMessage("Tapşırıq təsviri tələb olunur.");
 
-            RuleFor(x => x.Priority)
-                .NotEmpty()
+            RuleFor(x => x.PriorityId)
+                .GreaterThan(0)
                 .WithMessage("Tapşırıq adı tələb olunur.");
 
             RuleFor(x => x.ExecutiveUserId)
                 .NotEmpty()
                 .WithMessage("Tapşırıqın İcracisi tələb olunur.");
 
-            RuleFor(x => x.Status)
-                .NotEmpty()
+            RuleFor(x => x.StatusId)
+                .GreaterThan(0)
                 .WithMessage("Tapşırıq adı tələb olunur.");
 
             RuleFor(x => x.DeadLine)

@@ -9,15 +9,15 @@ public class GetTaskDto
     public DateTime CreateAt { get; set; }
     public string TaskName { get; set; }
     public string TaskDescription { get; set; }
-    public string Status { get; set; }
-    public string Priority { get; set; }
+    public int StatusId { get; set; }
+    public int PriorityId { get; set; }
     public DateOnly? DeadLine { get; set; }
     public long ThemeId { get; set; }
     public DateTime? DateOfCompletion { get; set; }
     public string? Contact { get; set; }
     public bool IsCompleted { get; set; }
 
-    public bool? isSeen { get; set; }
+    public bool? isUpdated { get; set; }
 
     public long? ExecutiveUserId { get; set; }
     public string? ExecutiveUserName { get; set; }

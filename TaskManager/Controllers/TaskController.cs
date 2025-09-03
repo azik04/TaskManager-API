@@ -28,25 +28,13 @@ public class TaskController : ControllerBase
     }
 
 
-    [HttpGet("Done")]
+    [HttpGet()]
     [Authorize(Policy = "User")]
-    public async Task<IActionResult> GetAllDone(long themeId, long userId)
+    public async Task<IActionResult> GetAll(long userId, int statusId)
     {
-        var res = await _service.GetAllDone(themeId, userId);
+        var res = await _service.GetAllAsync(userId, statusId);
         if (res.Success)
             return Ok(res);
-
-        return BadRequest(res);
-    }
-
-
-    [HttpGet("NotDone")]
-    [Authorize(Policy = "User")]
-    public async Task<IActionResult> GetAllNotDone(long themeId, long userId)
-    {
-        var res = await _service.GetAllNotDone(themeId, userId);
-        if (res.Success)
-            return Ok(res.Data);
 
         return BadRequest(res);
     }

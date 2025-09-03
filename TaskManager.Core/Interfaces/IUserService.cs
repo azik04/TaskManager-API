@@ -6,12 +6,12 @@ namespace TaskManager.Core.Interfaces;
 
 public interface IUserService
 {
-    Task<BaseResponse<GetUserDto>> Create(CreateUserDto user);
+    Task<BaseResponse<bool>> Create(CreateUserDto user);
     Task<BaseResponse<ICollection<GetUserDto>>> GetAdmin();
     Task<BaseResponse<ICollection<GetUserDto>>> GetUser();
     Task<BaseResponse<GetUserDto>> GetById(long id);
 
-    Task<BaseResponse<GetUserDto>> Remove(long id);
-    Task<BaseResponse<GetUserDto>> ChangeRole(long id, Role role);
-    Task<BaseResponse<GetUserDto>> Update(long id , UpdateUserDto user);
+    Task<BaseResponse<bool>> Remove(long id);
+    Task<BaseResponse<bool>> ChangeRole(long id, Role role);
+    Task<BaseResponse<bool>> Update(long id , UpdateUserDto user);
 }

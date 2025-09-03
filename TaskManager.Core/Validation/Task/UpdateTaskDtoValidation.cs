@@ -12,17 +12,14 @@ public class UpdateTaskDtoValidation : AbstractValidator<UpdateTaskDto>
              .WithMessage("Tapşırıq adı tələb olunur.");
 
         RuleFor(x => x.TaskDescription)
-            .NotEmpty()
-            .WithMessage("Tapşırıq təsviri tələb olunur.");
+            .NotEmpty().WithMessage("Tapşırıq təsviri tələb olunur.");
 
-        RuleFor(x => x.Priority)
-             .NotEmpty()
-             .WithMessage("Tapşırıq adı tələb olunur.");
+        RuleFor(x => x.PriorityId)
+             .GreaterThan(0).WithMessage("Tapşırıq adı tələb olunur.");
 
 
-        RuleFor(x => x.Status)
-            .NotEmpty()
-            .WithMessage("Tapşırıq adı tələb olunur.");
+        RuleFor(x => x.StatusId)
+            .GreaterThan(0).WithMessage("Tapşırıq adı tələb olunur.");
 
 
 

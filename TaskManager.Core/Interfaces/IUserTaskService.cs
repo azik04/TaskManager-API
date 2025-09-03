@@ -6,9 +6,9 @@ namespace TaskManager.Core.Interfaces
 {
     public interface IUserTaskService
     {
-        Task<BaseResponse<GetUserTaskDto>> CreateAsync(CreateUserTaskDto dto);
+        Task<BaseResponse<bool>> CreateAsync(CreateUserTaskDto dto);
         Task<BaseResponse<ICollection<GetUserTaskDto>>> GetUsersAsync(long themeId);
         Task<BaseResponse<ICollection<GetUserTaskDto>>> GetTaskAsync(long userId);
-        Task<BaseResponse<GetUserTaskDto>> RemoveAsync(long id);
+        Task<BaseResponse<bool>> RemoveAsync(long id);
     }
 }

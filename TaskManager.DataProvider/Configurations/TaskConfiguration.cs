@@ -10,9 +10,6 @@ public class TaskConfiguration : IEntityTypeConfiguration<Tasks>
     {
         builder.HasKey(t => t.Id);
 
-        builder.Property(t => t.Id)
-            .ValueGeneratedOnAdd();
-
         builder.HasOne(t => t.Theme)
             .WithMany(t => t.Tasks)
             .HasForeignKey(t => t.ThemeId)
@@ -21,7 +18,16 @@ public class TaskConfiguration : IEntityTypeConfiguration<Tasks>
         builder.HasOne(t => t.ExecutiveUser)
             .WithMany(u => u.Tasks)
             .HasForeignKey(t => t.ExecutiveUserId)
-            .IsRequired(false) 
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(t => t.Status)
+            .WithMany(u => u.Tasks)
+            .HasForeignKey(t => t.StatusId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(t => t.Priority)
+            .WithMany(u => u.Tasks)
+            .HasForeignKey(t => t.PriorityId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

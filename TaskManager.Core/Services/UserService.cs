@@ -17,7 +17,7 @@ public class UserService : IUserService
     _db = db; 
     }
 
-    public async Task<BaseResponse<GetUserDto>> Create(CreateUserDto user)
+    public async Task<BaseResponse<bool>> Create(CreateUserDto user)
     {
         var data = new Users
         {
@@ -39,7 +39,7 @@ public class UserService : IUserService
             isDeleted = data.IsDeleted,
         };
 
-        return new BaseResponse<GetUserDto>(dto);
+        return new BaseResponse<bool>(true);
     }
 
     public async Task<BaseResponse<ICollection<GetUserDto>>> GetAdmin()
@@ -96,14 +96,14 @@ public class UserService : IUserService
         return new BaseResponse<ICollection<GetUserDto>>(dto);
     }
 
-    public async Task<BaseResponse<GetUserDto>> Remove(long id)
+    public async Task<BaseResponse<bool>> Remove(long id)
     {
         if (id <= 0)
-            return new BaseResponse<GetUserDto>(null);
+            return new BaseResponse<bool>(false);
 
         var data = await _db.Users.SingleOrDefaultAsync(x => x.Id == id);
         if (data == null)
-            return new BaseResponse<GetUserDto>(null);
+            return new BaseResponse<bool>(false);
 
         data.IsDeleted = true;
 
@@ -119,17 +119,17 @@ public class UserService : IUserService
             isDeleted = data.IsDeleted,
         };
 
-        return new BaseResponse<GetUserDto>(dto);
+        return new BaseResponse<bool>(true);
     }
 
-    public async Task<BaseResponse<GetUserDto>> ChangeRole(long id, Role role)
+    public async Task<BaseResponse<bool>> ChangeRole(long id, Role role)
     {
         if (id <= 0)
-            return new BaseResponse<GetUserDto>(null);
+            return new BaseResponse<bool>(false);
 
         var data = await _db.Users.SingleOrDefaultAsync(x => x.Id == id);
         if (data == null)
-            return new BaseResponse<GetUserDto>(null);
+            return new BaseResponse<bool>(false);
 
         data.Role = role;
 
@@ -146,17 +146,17 @@ public class UserService : IUserService
             
         };
 
-        return new BaseResponse<GetUserDto>(dto);
+        return new BaseResponse<bool>(true);
     }
 
-    public async Task<BaseResponse<GetUserDto>> Update(long id, UpdateUserDto user)
+    public async Task<BaseResponse<bool>> Update(long id, UpdateUserDto user)
     {
         if (id <= 0)
-            return new BaseResponse<GetUserDto>(null);
+            return new BaseResponse<bool>(false);
 
         var data = await _db.Users.SingleOrDefaultAsync(x => x.Id == id);
         if (data == null)
-            return new BaseResponse<GetUserDto>(null);
+            return new BaseResponse<bool>(false);
 
         data.FullName = user.FirstName + " " + user.LastName;
         data.Email = user.Email;
@@ -173,7 +173,7 @@ public class UserService : IUserService
             isDeleted = data.IsDeleted,
         };
 
-        return new BaseResponse<GetUserDto>(dto);
+        return new BaseResponse<bool>(true);
     }
 
 

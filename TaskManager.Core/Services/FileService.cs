@@ -20,30 +20,29 @@ public class FileService : IFileService
         _env = env;
     }
 
-    public async Task<BaseResponse<GetFileDto>> DeleteFile(long id)
+    public async Task<BaseResponse<bool>> DeleteFile(long id)
     {
         if (id <= 0)
-            return new BaseResponse<GetFileDto>(null);
+            return new BaseResponse<bool>(null);
 
         var data = await _db.Files.SingleOrDefaultAsync(f => f.Id == id);
         if (data == null)
-            return new BaseResponse<GetFileDto>(null);
+            return new BaseResponse<bool>(null);
 
         data.IsDeleted = true;
 
         _db.Files.Update(data);
+
+        var userTask = _db.UserTask.Where(t => t.Id == data.TaskId).AsQueryable();
+        foreach (var item in userTask)
+        {
+            item.hasUpdate = true;
+        }
+        
+        _db.UserTask.UpdateRange(userTask);
         await _db.SaveChangesAsync();
 
-        var dto = new GetFileDto
-        {
-            Id = data.Id,
-            FileName = data.FileName,
-            IsDeleted = data.IsDeleted,
-            CreateAt = DateTime.Now,
-            TaskId = data.TaskId,
-        };
-
-        return new BaseResponse<GetFileDto>(dto);
+        return new BaseResponse<bool>(true);
     }
 
     public async Task<FileStreamResult> DownloadFile(long id)
@@ -90,7 +89,7 @@ public class FileService : IFileService
         return new BaseResponse<ICollection<GetFileDto>>(fileVMs);
     }
 
-    public async Task<BaseResponse<GetFileDto>> UploadFile(Stream fileStream, CreateFileDto dto)
+    public async Task<BaseResponse<bool>> UploadFile(Stream fileStream, CreateFileDto dto)
     {
         try
         {
@@ -102,7 +101,7 @@ public class FileService : IFileService
             var localFilePath = Path.Combine(uploadDir, dto.File.FileName);
 
             if (File.Exists(localFilePath))
-                return new BaseResponse<GetFileDto>(null, true, "File with this name exists");
+                return new BaseResponse<bool>(false, false, "File with this name exists");
 
             using (var fileStreamOutput = new FileStream(localFilePath, FileMode.Create))
                 await fileStream.CopyToAsync(fileStreamOutput);
@@ -119,25 +118,17 @@ public class FileService : IFileService
             var userTask = await _db.UserTask.Where(x => x.TaskId == dto.TaskId).ToListAsync();
             foreach(var item  in userTask)
             {
-                item.isSeen = true;
-                _db.UserTask.Update(item);
+                item.hasUpdate = true;
             }
+
+            _db.UserTask.UpdateRange(userTask);
             await _db.SaveChangesAsync();
 
-            var fileDto = new GetFileDto
-            {
-                Id = file.Id,
-                FileName = file.FileName,
-                IsDeleted = file.IsDeleted,
-                CreateAt = DateTime.Now,
-                TaskId = file.TaskId,
-            };
-
-            return new BaseResponse<GetFileDto>(fileDto);
+            return new BaseResponse<bool>(true);
         }
         catch (Exception ex)
         {
-            return new BaseResponse<GetFileDto>(null, false, $"Error: {ex.Message}");
+            return new BaseResponse<bool>(false, false, $"Error: {ex.Message}");
         }
     }
 

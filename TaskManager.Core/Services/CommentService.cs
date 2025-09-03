@@ -15,7 +15,7 @@ public class CommentService : ICommentService
         _db = db;
     }
 
-    public async Task<BaseResponse<GetCommentDto>> Create(CreateCommentDto comment)
+    public async Task<BaseResponse<bool>> Create(CreateCommentDto comment)
     {
         var data = new Comments
         {
@@ -30,26 +30,13 @@ public class CommentService : ICommentService
         var useTask = await _db.UserTask.Where(x => x.TaskId == comment.TaskId).ToListAsync();
         foreach (var item in useTask)
         {
-            item.isSeen = true;
+            item.hasUpdate = true;
             _db.UserTask.Update(item);
         }
 
         await _db.SaveChangesAsync();
 
-        var dto = new GetCommentDto
-        {
-            Id = data.Id,
-            Message = data.Message,
-            TaskId = data.TaskId,
-            UserId = data.UserId,
-            IsDeleted = data.IsDeleted,
-            CreateAt = data.CreateAt,
-        };
-
-    
-
-
-        return new BaseResponse<GetCommentDto>(dto);
+        return new BaseResponse<bool>(true);
     }
 
     public async Task<BaseResponse<ICollection<GetCommentDto>>> GetByTask(long taskId)
@@ -81,14 +68,14 @@ public class CommentService : ICommentService
         return new BaseResponse<ICollection<GetCommentDto>>(dtos);
     }
 
-    public async Task<BaseResponse<GetCommentDto>> Remove(long id)
+    public async Task<BaseResponse<bool>> Remove(long id)
     {
         if (id <= 0)
-            return new BaseResponse<GetCommentDto>(null);
+            return new BaseResponse<bool>(null);
         
         var data = await _db.Comments.SingleOrDefaultAsync(x => x.Id == id);
         if (data == null)
-            return new BaseResponse<GetCommentDto>(null);
+            return new BaseResponse<bool>(null);
 
         data.IsDeleted = true;
 
@@ -105,17 +92,17 @@ public class CommentService : ICommentService
             CreateAt = data.CreateAt,
         };
 
-        return new BaseResponse<GetCommentDto>(dto);
+        return new BaseResponse<bool>(false);
     }
 
-    public async Task<BaseResponse<GetCommentDto>> Update(long id, UpdateCommentDto comment)
+    public async Task<BaseResponse<bool>> Update(long id, UpdateCommentDto comment)
     {
         if (id <= 0)
-            return new BaseResponse<GetCommentDto>(null);
+            return new BaseResponse<bool>(null);
 
         var data = await _db.Comments.SingleOrDefaultAsync(x => x.Id == id);
         if (data == null)
-            return new BaseResponse<GetCommentDto>(null);
+            return new BaseResponse<bool>(null);
 
         data.Message = comment.Message;
         
@@ -132,6 +119,6 @@ public class CommentService : ICommentService
             CreateAt = data.CreateAt,
         };
 
-        return new BaseResponse<GetCommentDto>(dto);
+        return new BaseResponse<bool>(false);
     }
 }

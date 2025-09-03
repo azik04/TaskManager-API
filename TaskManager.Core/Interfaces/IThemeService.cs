@@ -5,10 +5,10 @@ namespace TaskManager.Core.Interfaces;
 
 public interface IThemeService
 {
-    Task<BaseResponse<GetThemeDto>> CreateAsync(CreateThemeDto theme);
+    Task<BaseResponse<bool>> CreateAsync(CreateThemeDto theme);
     Task<BaseResponse<ICollection<GetThemeDto>>> GetAllAsync(long userId);
-    Task<BaseResponse<GetThemeDto>> RemoveAsync(long id);
-    Task<BaseResponse<GetThemeDto>> UpdateAsync(long id , UpdateThemeDto theme);
+    Task<BaseResponse<bool>> RemoveAsync(long id);
+    Task<BaseResponse<bool>> UpdateAsync(long id , UpdateThemeDto theme);
 
 
 }
